@@ -121,7 +121,7 @@ class MusicCog(commands.Cog):
     @staticmethod
     def get_formatted_duration(duration: int = None) -> str:
         if duration is None:
-            return 'Неизвестно'
+            return 'Невідомо'
 
         dt = datetime.utcfromtimestamp(duration)
         if dt.day == 1:
@@ -158,16 +158,16 @@ class MusicCog(commands.Cog):
                 if len(before.channel.members) == 1 and before.channel.members[0] == self.bot.user:
                     await self.disconnect(before.channel.guild.id)
 
-    @discord.app_commands.command(name='play', description='Запустить музыку с YouTube')
-    @discord.app_commands.describe(search='Введите строку для поиска или URL')
+    @discord.app_commands.command(name='play', description='Запустити музику з YouTube')
+    @discord.app_commands.describe(search='Введіть рядок для пошуку або URL')
     async def command_play(self, interaction: Interaction, search: str) -> None:
         if not self.is_user_connected(interaction):
             await interaction.response.defer(ephemeral=True)
-            await interaction.followup.send('❌ Вы не подключены к голосовому каналу')
+            await interaction.followup.send('❌ Ви не підключені до голосового каналу')
             return
         if not self.is_queue_empty(interaction.guild_id) and not self.is_user_with_bot(interaction):
             await interaction.response.defer(ephemeral=True)
-            await interaction.followup.send('❌ Вы не подключены к голосовому каналу, в котором находится бот')
+            await interaction.followup.send('❌ Ви не підключені до голосового каналу, в якому знаходиться бот')
             return
 
         with YoutubeDL(self.YDL_OPTIONS) as ydl:
@@ -194,34 +194,34 @@ class MusicCog(commands.Cog):
                         view=MusicSelectView(self, interaction, entries)
                     )
                 else:
-                    await interaction.followup.send('❌ По вашему запросу ничего не найдено')
+                    await interaction.followup.send('❌ На ваш запит нічого не знайдено')
 
-    @discord.app_commands.command(name='skip', description='Пропустить текущий трек')
+    @discord.app_commands.command(name='skip', description='Пропустити поточний трек')
     async def command_skip(self, interaction: Interaction) -> None:
         await interaction.response.defer(ephemeral=True)
 
         if not self.is_bot_connected(interaction.guild_id):
-            await interaction.followup.send('❌ Бот не подключен к голосовому каналу')
+            await interaction.followup.send('❌ Бот не підключено до голосового каналу')
             return
         if not self.is_user_connected(interaction):
-            await interaction.followup.send('❌ Вы не подключены к голосовому каналу')
+            await interaction.followup.send('❌ Ви не підключені до голосового каналу')
             return
         if not self.is_user_with_bot(interaction):
-            await interaction.followup.send('❌ Вы не подключены к голосовому каналу, в котором находится бот')
+            await interaction.followup.send('❌ Ви не підключені до голосового каналу, в якому знаходиться бот')
             return
 
         self.skip_track(interaction)
         if self.is_first_track(interaction.guild_id):
             await interaction.followup.send('👋')
         else:
-            await interaction.followup.send('✅ Пропускаю текущий трек')
+            await interaction.followup.send('✅ Пропускаю поточний трек')
 
-    @discord.app_commands.command(name='queue', description='Просмотреть очередь треков')
+    @discord.app_commands.command(name='queue', description='Переглянути чергу треків')
     async def command_queue(self, interaction: Interaction) -> None:
         await interaction.response.defer(ephemeral=True)
 
         if not self.is_bot_connected(interaction.guild_id):
-            await interaction.followup.send('❌ Бот не подключен к голосовому каналу')
+            await interaction.followup.send('❌ Бот не підключено до голосового каналу')
             return
 
         await interaction.followup.send(embed=QueueEmbed(
@@ -229,18 +229,18 @@ class MusicCog(commands.Cog):
             interaction.guild_id
         ), ephemeral=True)
 
-    @discord.app_commands.command(name='stop', description='Отключить бота')
+    @discord.app_commands.command(name='stop', description='Вимкнути бота')
     async def command_stop(self, interaction: Interaction) -> None:
         await interaction.response.defer(ephemeral=True)
 
         if not self.is_bot_connected(interaction.guild_id):
-            await interaction.followup.send('❌ Бот не подключен к голосовому каналу')
+            await interaction.followup.send('❌ Бот не підключено до голосового каналу')
             return
         if not self.is_user_connected(interaction):
-            await interaction.followup.send('❌ Вы не подключены к голосовому каналу')
+            await interaction.followup.send('❌ Ви не підключені до голосового каналу')
             return
         if not self.is_user_with_bot(interaction):
-            await interaction.followup.send('❌ Вы не подключены к голосовому каналу, в котором находится бот')
+            await interaction.followup.send('❌ Ви не підключені до голосового каналу, в якому знаходиться бот')
             return
 
         await self.disconnect(interaction.guild.id)
@@ -265,7 +265,7 @@ class MusicSelect(Select):
         self.__cog = cog
         self.__entries = entries
 
-        super().__init__(placeholder='Выберите нужное', options=[
+        super().__init__(placeholder='Виберіть потрібне', options=[
             discord.SelectOption(label='{}. {}'.format(
                 i + 1,
                 MusicCog.get_formatted_option(f'{entry["channel"]} - {entry["title"]}')), value=str(i)
@@ -303,14 +303,14 @@ class MusicControlView(View):
 
         super().__init__(timeout=600)
 
-    @discord.ui.button(emoji='⏭', label='Пропустить', style=discord.ButtonStyle.gray)
+    @discord.ui.button(emoji='⏭', label='Пропустити', style=discord.ButtonStyle.gray)
     async def btn_skip(self, interaction: Interaction, button: Button):
         await interaction.response.defer()
 
         if self.__cog.is_user_with_bot(interaction):
             self.__cog.bot.get_guild(interaction.guild_id).voice_client.stop()
 
-    @discord.ui.button(emoji='💬', label='Очередь', style=discord.ButtonStyle.gray)
+    @discord.ui.button(emoji='💬', label='Черга', style=discord.ButtonStyle.gray)
     async def btn_queue(self, interaction: Interaction, button: Button):
         await interaction.response.defer(ephemeral=True)
 
@@ -324,7 +324,7 @@ class MusicControlView(View):
     async def btn_stub(self, interaction: Interaction, button: Button):
         await interaction.response.defer()
 
-    @discord.ui.button(label='Отключить', style=discord.ButtonStyle.danger)
+    @discord.ui.button(label='Вимкнути', style=discord.ButtonStyle.danger)
     async def btn_disconnect(self, interaction: Interaction, button: Button):
         await interaction.response.defer()
 
@@ -344,11 +344,11 @@ class MusicControlViewDisabled(View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(emoji='⏭', label='Пропустить', style=discord.ButtonStyle.gray, disabled=True)
+    @discord.ui.button(emoji='⏭', label='Пропустити', style=discord.ButtonStyle.gray, disabled=True)
     async def btn_skip(self, interaction: Interaction, button: Button):
         pass
 
-    @discord.ui.button(emoji='💬', label='Очередь', style=discord.ButtonStyle.gray, disabled=True)
+    @discord.ui.button(emoji='💬', label='Черга', style=discord.ButtonStyle.gray, disabled=True)
     async def btn_queue(self, interaction: Interaction, button: Button):
         pass
 
@@ -356,7 +356,7 @@ class MusicControlViewDisabled(View):
     async def btn_stub(self, interaction: Interaction, button: Button):
         pass
 
-    @discord.ui.button(label='Отключить', style=discord.ButtonStyle.danger, disabled=True)
+    @discord.ui.button(label='Вимкнути', style=discord.ButtonStyle.danger, disabled=True)
     async def btn_disconnect(self, interaction: Interaction, button: Button):
         pass
 
@@ -365,7 +365,7 @@ class SearchEmbed(Embed):
     def __init__(self, cog: MusicCog, yt_entries: dict):
         self.__cog = cog
 
-        super().__init__(title='Результаты поиска :')
+        super().__init__(title='Результати пошуку :')
 
         for i, entry in enumerate(yt_entries, 1):
             self.add_field(
@@ -387,7 +387,7 @@ class SearchEmbed(Embed):
 
 class QueueEmbed(Embed):
     def __init__(self, queue: dict, guild_id: int):
-        super().__init__(title='Очередь')
+        super().__init__(title='Черга')
 
         if queue[guild_id][1:]:
             for i, data in enumerate(queue[guild_id][1:], 1):
@@ -402,8 +402,8 @@ class QueueEmbed(Embed):
                 )
         else:
             self.add_field(
-                name='В очереди ничего нет.',
-                value='Добавьте треки, используя команду **/play**'
+                name='У черзі нічого немає.',
+                value='Додайте треки, використовуючи команду **/play**'
             )
         self.set_footer(
             text='YouTube',
@@ -415,8 +415,8 @@ class TrackEmbed(Embed):
     def __init__(self, source: dict, user: Member, icon_url: str):
         super().__init__(title=source['title'], url=source['original_url'])
 
-        self.add_field(name='Запрошено пользователем :', value=f'`{user}`', inline=True)
-        self.add_field(name='Длительность :', value='`{}`'.format(source['duration']), inline=True)
+        self.add_field(name='Запрошено користувачем :', value=f'`{user}`', inline=True)
+        self.add_field(name='Тривалість :', value='`{}`'.format(source['duration']), inline=True)
         self.set_footer(text='YouTube', icon_url=icon_url)
 
 
@@ -433,5 +433,5 @@ class PlayQueueEmbed(TrackEmbed):
     def __init__(self, source: dict, user: Member, icon_url: str):
         super().__init__(source, user, icon_url)
 
-        self.set_author(name='Трек добавлен в очередь')
+        self.set_author(name='Трек доданий до черги')
         self.set_thumbnail(url=source['thumbnail'])
